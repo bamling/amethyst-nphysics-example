@@ -1,0 +1,10 @@
+[workspace]
+
+exclude = [
+    "game"
+]
+
+members = [
+#	"game",
+	"game_physics"
+]

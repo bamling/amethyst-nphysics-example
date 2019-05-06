@@ -1,0 +1,16 @@
+[package]
+name = "game"
+version = "0.1.0"
+authors = ["bamlin <b.amling@tarent.de>"]
+edition = "2018"
+
+[dependencies.amethyst]
+git = "https://github.com/amethyst/amethyst"
+features = ["nightly"]
+
+[dependencies]
+log = "0.4.6"
+nalgebra = "0.18.0"
+ncollide2d = "0.19.1"
+nphysics2d = "0.11.1"
+game_physics = { path = "../game_physics/" } # TODO: fix workspaces?!

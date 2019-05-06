@@ -1,0 +1,18 @@
+#![enable(implicit_some)]
+Container (
+    transform: (
+        id: "background",
+        anchor: Middle,
+        stretch: XY (
+            x_margin: 0.0,
+            y_margin: 0.0,
+            keep_aspect_ratio: false,
+        ),
+    ),
+    background: (
+        image: Data (
+            Rgba ((0.0, 0.0, 0.0, 0.0), (channel: Srgb))
+        )
+    ),
+    children: []
+)

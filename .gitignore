@@ -1,0 +1,5 @@
+.idea
+target
+game/target
+game_physics/target
+game_physics/ncollide_deprecated
