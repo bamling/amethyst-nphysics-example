@@ -1,14 +1,15 @@
 use amethyst::ecs::{Component, DenseVecStorage, FlaggedStorage};
-use nphysics::math::Velocity;
-use nphysics::object::{BodyHandle, BodyStatus};
+use nphysics::{
+    math::Velocity,
+    object::{BodyHandle, BodyStatus},
+};
 
-/// The `PhysicsBody` `Component` defines an entity of the `PhysicsWorld`. The velocity value
-/// is automatically synchronised with the `PhysicsWorld`.
+/// The `PhysicsBody` `Component` defines an entity of the `PhysicsWorld`. The
+/// values are automatically synchronised with the `PhysicsWorld`.
 #[derive(Clone, Copy, Debug)]
 pub struct PhysicsBody {
-    pub(crate) handle: Option<BodyHandle>,
+    pub handle: Option<BodyHandle>,
     pub velocity: Velocity<f32>,
-
     pub body_status: BodyStatus,
 }
 

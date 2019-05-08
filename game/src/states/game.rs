@@ -11,10 +11,12 @@ use amethyst::{
 
 use crate::{resources::Player, systems::GameSystemsBundle};
 
+use game_physics::body::PhysicsBody;
+
 pub type GamePrefabData = BasicScenePrefab<Vec<PosNormTex>, f32>;
 
-/// The `GameState` contains the actual game area and gameplay elements. When the escape key
-/// is pressed, the game exists.
+/// The `GameState` contains the actual game area and gameplay elements. When
+/// the escape key is pressed, the game exists.
 pub struct GameState<'a, 'b> {
     /// `State` specific dispatcher.
     dispatcher: Option<Dispatcher<'a, 'b>>,
@@ -50,7 +52,8 @@ impl<'a, 'b> SimpleState for GameState<'a, 'b> {
     }
 
     fn handle_event(&mut self, _data: StateData<GameData>, event: StateEvent) -> SimpleTrans {
-        // handle window events and quit the current State if the Escape button is pressed
+        // handle window events and quit the current State if the Escape button is
+        // pressed
         if let StateEvent::Window(event) = event {
             if is_close_requested(&event) || is_key_down(&event, VirtualKeyCode::Escape) {
                 return Trans::Quit;
@@ -135,6 +138,7 @@ impl<'a, 'b> GameState<'a, 'b> {
                 sprite_sheet: self.objects_handle.clone(),
                 sprite_number: 0,
             })
+            .with(PhysicsBody::new_static())
             .with(transform)
             .build();
     }

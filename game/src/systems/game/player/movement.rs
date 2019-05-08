@@ -1,29 +1,17 @@
 use amethyst::{
     core::Transform,
-    ecs::{
-        prelude::*,
-        Read,
-        ReadExpect,
-        Resources,
-        System,
-        WriteStorage,
-    },
+    ecs::{prelude::*, Read, ReadExpect, Resources, System, WriteStorage},
     shrev::ReaderId,
 };
 
-use crate::{
-    resources::{
-        Command,
-        CommandChannel,
-        Player,
-    },
-};
+use crate::resources::{Command, CommandChannel, Player};
 
-/// The `MovementSystem` handles the moving of the player `Entity` in the game world. The `System`
-/// listens to the `CommandChannel` and moves the player accordingly.
+/// The `MovementSystem` handles the moving of the player `Entity` in the game
+/// world. The `System` listens to the `CommandChannel` and moves the player
+/// accordingly.
 #[derive(Default)]
 pub struct MovementSystem {
-    command_reader: Option<ReaderId<Command>>
+    command_reader: Option<ReaderId<Command>>,
 }
 
 impl<'s> System<'s> for MovementSystem {

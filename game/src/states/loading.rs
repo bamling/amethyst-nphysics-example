@@ -1,12 +1,24 @@
 use amethyst::{
     assets::{
-        AssetStorage, Completion, Handle, Loader, Prefab, PrefabLoader, ProgressCounter, RonFormat,
+        AssetStorage,
+        Completion,
+        Handle,
+        Loader,
+        Prefab,
+        PrefabLoader,
+        ProgressCounter,
+        RonFormat,
     },
     ecs::prelude::Entity,
     input::{is_close_requested, is_key_down},
     prelude::*,
     renderer::{
-        PngFormat, SpriteSheet, SpriteSheetFormat, SpriteSheetHandle, Texture, TextureMetadata,
+        PngFormat,
+        SpriteSheet,
+        SpriteSheetFormat,
+        SpriteSheetHandle,
+        Texture,
+        TextureMetadata,
         VirtualKeyCode,
     },
     ui::{FontHandle, TtfFormat, UiCreator},
@@ -14,8 +26,8 @@ use amethyst::{
 
 use super::game::{GamePrefabData, GameState};
 
-/// The `LoadingState` loads all required `Assets` and ensures everything is ready before
-/// transitioning into the `GameState`.
+/// The `LoadingState` loads all required `Assets` and ensures everything is
+/// ready before transitioning into the `GameState`.
 #[derive(Default)]
 pub struct LoadingState {
     progress: ProgressCounter,
@@ -61,7 +73,8 @@ impl SimpleState for LoadingState {
     }
 
     fn handle_event(&mut self, _data: StateData<GameData>, event: StateEvent) -> SimpleTrans {
-        // handle window events and quit the current State if the Escape button is pressed
+        // handle window events and quit the current State if the Escape button is
+        // pressed
         if let StateEvent::Window(event) = event {
             if is_close_requested(&event) || is_key_down(&event, VirtualKeyCode::Escape) {
                 return Trans::Quit;
