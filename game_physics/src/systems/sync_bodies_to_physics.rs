@@ -25,9 +25,9 @@ use nphysics::object::{Body, RigidBodyDesc};
 
 use crate::{body::PhysicsBody, EntityBodyHandles, PhysicsWorld};
 
-/// The `SyncBodiesToPhysicsSystem` handles the synchronisation of `PhysicsBody`
-/// `Component`s and their `Transform` values from Amethyst to the
-/// `PhysicsWorld` instance.
+/// `SyncBodiesToPhysicsSystem` collects `PhysicsBody` `Component`s and their
+/// corresponding `Transform`s and synchronises their combined values (as so
+/// called `RigidBody`s) into the `PhysicsWorld`.
 pub struct SyncBodiesToPhysicsSystem {
     transforms_reader_id: Option<ReaderId<ComponentEvent>>,
     physics_bodies_reader_id: Option<ReaderId<ComponentEvent>>,
@@ -47,17 +47,16 @@ impl<'s> System<'s> for SyncBodiesToPhysicsSystem {
         WriteStorage<'s, PhysicsBody>,
     );
 
-    fn run(
-        &mut self,
-        (entities, transforms, mut body_handles, mut world, mut bodies): Self::SystemData,
-    ) {
+    fn run(&mut self, data: Self::SystemData) {
+        let (entities, transforms, mut body_handles, mut world, mut bodies) = data;
+
         // clear the BitSets before starting work
         self.clear();
 
-        // collect component event flags for Transforms and removing deleted ones from
-        // the physics world
+        // iterate over Transform storage events, keep track of inserted and modified
+        // entries and delete removed entries from the physics world
         trace!("Iterating Transform storage events...");
-        handle_component_events(
+        iterate_component_events(
             &transforms,
             self.transforms_reader_id.as_mut().unwrap(),
             &mut self.inserted_transforms,
@@ -67,10 +66,10 @@ impl<'s> System<'s> for SyncBodiesToPhysicsSystem {
             &mut body_handles,
         );
 
-        // collect component event flags for PhysicsBody and removing deleted ones from
-        // the physics world
+        // iterate over PhysicsBody storage events, keep track of inserted and modified
+        // entries and delete removed entries from the physics world
         trace!("Iterating PhysicsBody storage events...");
-        handle_component_events(
+        iterate_component_events(
             &bodies,
             self.physics_bodies_reader_id.as_mut().unwrap(),
             &mut self.inserted_physics_bodies,
@@ -128,7 +127,7 @@ impl<'s> System<'s> for SyncBodiesToPhysicsSystem {
 }
 
 impl SyncBodiesToPhysicsSystem {
-    /// Creates a new `SyncBodiesToPhysicsSystem` with the given reader IDs.
+    /// Creates a new `SyncBodiesToPhysicsSystem` with initialised `BitSet`s.
     pub fn new() -> Self {
         Self {
             transforms_reader_id: None,
@@ -153,18 +152,19 @@ impl SyncBodiesToPhysicsSystem {
 /// Generic way of handling multiple types of `Component`s and their
 /// `ComponentEvent`s. This keeps track of which IDs were inserted and modified
 /// and deletes removed IDs from the `PhysicsWorld`.
-fn handle_component_events<T, D>(
+fn iterate_component_events<T, D>(
     tracked_storage: &Storage<T, D>,
     reader_id: &mut ReaderId<ComponentEvent>,
     inserted: &mut BitSet,
     modified: &mut BitSet,
-    physics_world: &mut PhysicsWorld,
+    world: &mut PhysicsWorld,
     entities: &Entities,
-    entity_body_handles: &mut EntityBodyHandles,
+    body_handles: &mut EntityBodyHandles,
 ) where
     T: Component,
     T::Storage: Tracked,
-    D: Deref<Target = MaskedStorage<T>>, {
+    D: Deref<Target = MaskedStorage<T>>,
+{
     for component_event in tracked_storage.channel().read(reader_id) {
         match component_event {
             ComponentEvent::Inserted(id) => {
@@ -178,10 +178,10 @@ fn handle_component_events<T, D>(
             }
             ComponentEvent::Removed(id) => {
                 debug!("Got Removed event with id: {}", id);
-                match entity_body_handles.remove(&entities.entity(*id)) {
+                match body_handles.remove(&entities.entity(*id)) {
                     Some(handle) => {
                         debug!("Removing physics body with id: {}", id);
-                        physics_world.remove_bodies(&[handle]);
+                        world.remove_bodies(&[handle]);
                     }
                     None => warn!("Missing body handle with id: {}", id),
                 }
