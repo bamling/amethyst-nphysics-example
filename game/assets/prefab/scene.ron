@@ -7,14 +7,12 @@ Prefab (
                     translation: (0.0, 0.0, 1.0),
                 ),
                 camera: Orthographic(
-                    (
-                        left: 0.0,
-                        right: 100.0,
-                        bottom: 0.0,
-                        top: 100.0,
-                        znear: 0.1,
-                        zfar: 2000.0,
-                    )
+                    left: 0.0,
+                    right: 100.0,
+                    bottom: -100.0,
+                    top: 0.0,
+                    znear: 0.1,
+                    zfar: 2000.0,
                 )
             )
         )

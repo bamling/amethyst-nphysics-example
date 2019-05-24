@@ -1,19 +1,23 @@
 use amethyst::{
     assets::{Handle, Prefab},
-    core::{math::Vector3, transform::Transform, SystemBundle},
+    core::{transform::Transform, SystemBundle},
     ecs::prelude::*,
     input::{is_close_requested, is_key_down},
     prelude::*,
-    renderer::{PosNormTex, SpriteRender, SpriteSheetHandle, VirtualKeyCode},
+    renderer::{
+        rendy::mesh::{Normal, Position, TexCoord},
+        sprite::{SpriteRender, SpriteSheetHandle},
+    },
     ui::FontHandle,
     utils::scene::BasicScenePrefab,
+    winit::VirtualKeyCode,
 };
+
+use game_physics::{MotionBuilder, PhysicsBodyBuilder, PhysicsColliderBuilder, Shape};
 
 use crate::{resources::Player, systems::GameSystemsBundle};
 
-use game_physics::body::PhysicsBody;
-
-pub type GamePrefabData = BasicScenePrefab<Vec<PosNormTex>, f32>;
+pub type GamePrefabData = BasicScenePrefab<(Vec<Position>, Vec<Normal>, Vec<TexCoord>)>;
 
 /// The `GameState` contains the actual game area and gameplay elements. When
 /// the escape key is pressed, the game exists.
@@ -36,7 +40,7 @@ impl<'a, 'b> SimpleState for GameState<'a, 'b> {
         // create dispatcher
         self.create_dispatcher(world);
 
-        // initialise ui and scene
+        // initialise scene
         world
             .create_entity()
             .with(self.scene_handle.clone())
@@ -58,13 +62,23 @@ impl<'a, 'b> SimpleState for GameState<'a, 'b> {
             if is_close_requested(&event) || is_key_down(&event, VirtualKeyCode::Escape) {
                 return Trans::Quit;
             }
+            // TODO: just for testing
+            if is_key_down(&event, VirtualKeyCode::Return) {
+                let player = {
+                    let player = _data.world.read_resource::<Player>();
+                    player.player
+                };
+                _data.world.delete_entity(player);
+
+                return Trans::None;
+            }
         }
 
         // event was not of type StateEvent, so no transition is required
         Trans::None
     }
 
-    fn update(&mut self, data: &mut StateData<GameData>) -> SimpleTrans {
+    fn fixed_update(&mut self, data: StateData<GameData>) -> SimpleTrans {
         if let Some(dispatcher) = self.dispatcher.as_mut() {
             dispatcher.dispatch(&data.world.res);
         }
@@ -106,9 +120,8 @@ impl<'a, 'b> GameState<'a, 'b> {
     /// Creates the player `Entity` and its corresponding `Player` `Resource`.
     fn initialise_player(&mut self, world: &mut World) {
         // create the players transform
-        let mut transform = Transform::<f32>::default();
-        transform.set_scale(Vector3::new(0.5, 0.5, 0.5));
-        transform.set_translation_xyz(50.0, 50.0, 0.0);
+        let mut transform = Transform::default();
+        transform.set_translation_xyz(25.0, 50.0, 0.0);
 
         // create player entity
         let player = world
@@ -117,6 +130,13 @@ impl<'a, 'b> GameState<'a, 'b> {
                 sprite_sheet: self.character_handle.clone(),
                 sprite_number: 0,
             })
+            .with(MotionBuilder::default().build().unwrap())
+            .with(PhysicsBodyBuilder::new_dynamic().build().unwrap())
+            .with(
+                PhysicsColliderBuilder::from(Shape::Rectangle(7.5, 7.5))
+                    .build()
+                    .unwrap(),
+            )
             .with(transform)
             .build();
 
@@ -127,9 +147,8 @@ impl<'a, 'b> GameState<'a, 'b> {
     /// Creates the random obstacle `Entity`s.
     fn initialise_obstacles(&mut self, world: &mut World) {
         // create the transform
-        let mut transform = Transform::<f32>::default();
-        transform.set_scale(Vector3::new(0.5, 0.5, 0.5));
-        transform.set_translation_xyz(75.0, 75.0, 0.0);
+        let mut transform = Transform::default();
+        transform.set_translation_xyz(75.0, 50.0, 0.0);
 
         // create the entity
         world
@@ -138,7 +157,13 @@ impl<'a, 'b> GameState<'a, 'b> {
                 sprite_sheet: self.objects_handle.clone(),
                 sprite_number: 0,
             })
-            .with(PhysicsBody::new_static())
+            // TODO: test pushing of moving objects
+            .with(PhysicsBodyBuilder::new_static().build().unwrap())
+            .with(
+                PhysicsColliderBuilder::from(Shape::Rectangle(7.5, 7.5))
+                    .build()
+                    .unwrap(),
+            )
             .with(transform)
             .build();
     }

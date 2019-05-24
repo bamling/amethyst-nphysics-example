@@ -13,15 +13,13 @@ use amethyst::{
     input::{is_close_requested, is_key_down},
     prelude::*,
     renderer::{
-        PngFormat,
+        formats::texture::ImageFormat,
+        sprite::{SpriteSheetFormat, SpriteSheetHandle},
         SpriteSheet,
-        SpriteSheetFormat,
-        SpriteSheetHandle,
         Texture,
-        TextureMetadata,
-        VirtualKeyCode,
     },
     ui::{FontHandle, TtfFormat, UiCreator},
+    winit::VirtualKeyCode,
 };
 
 use super::game::{GamePrefabData, GameState};
@@ -54,12 +52,10 @@ impl SimpleState for LoadingState {
             }));
 
         // load scene handle
-        self.scene_handle = Some(world.exec(|loader: PrefabLoader<GamePrefabData>| {
-            loader.load("prefab/scene.ron", RonFormat, (), &mut self.progress)
-        }));
+        self.scene_handle = Some(self.load_prefab("prefab/scene.ron", world));
 
         // load font handle
-        self.font_handle = Some(self.load_font(world));
+        self.font_handle = Some(self.load_font("font/square.ttf", world));
 
         // load sprite sheet handles
         self.character_handle =
@@ -127,13 +123,23 @@ impl SimpleState for LoadingState {
 }
 
 impl LoadingState {
+    /// Loads the `Prefab` from the given path and returns its handle.
+    fn load_prefab(
+        &mut self,
+        prefab_path: &str,
+        world: &mut World,
+    ) -> Handle<Prefab<GamePrefabData>> {
+        world.exec(|loader: PrefabLoader<'_, GamePrefabData>| {
+            loader.load(prefab_path, RonFormat, &mut self.progress)
+        })
+    }
+
     /// Load the default game font and return its handle.
-    fn load_font(&mut self, world: &mut World) -> FontHandle {
+    fn load_font(&mut self, font_path: &str, world: &mut World) -> FontHandle {
         world.read_resource::<Loader>().load(
-            "font/square.ttf",
+            font_path,
             TtfFormat,
-            Default::default(),
-            (),
+            &mut self.progress,
             &world.read_resource(),
         )
     }
@@ -154,8 +160,7 @@ impl LoadingState {
             let texture_storage = world.read_resource::<AssetStorage<Texture>>();
             loader.load(
                 texture_path,
-                PngFormat,
-                TextureMetadata::srgb_scale(),
+                ImageFormat::default(),
                 &mut self.progress,
                 &texture_storage,
             )
@@ -165,8 +170,7 @@ impl LoadingState {
         let sprite_sheet_store = world.read_resource::<AssetStorage<SpriteSheet>>();
         loader.load(
             ron_path, // Here we load the associated ron file
-            SpriteSheetFormat,
-            texture_handle, // We pass it the texture we want it to use
+            SpriteSheetFormat(texture_handle),
             &mut self.progress,
             &sprite_sheet_store,
         )

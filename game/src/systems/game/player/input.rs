@@ -1,6 +1,6 @@
 use amethyst::{
     ecs::{Read, System, Write},
-    input::InputHandler,
+    input::{InputHandler, StringBindings},
 };
 
 use crate::resources::{Command, CommandChannel};
@@ -13,23 +13,19 @@ pub struct InputSystem;
 
 impl<'s> System<'s> for InputSystem {
     type SystemData = (
-        Read<'s, InputHandler<String, String>>,
+        Read<'s, InputHandler<StringBindings>>,
         Write<'s, CommandChannel>,
     );
 
     fn run(&mut self, (input, mut commands): Self::SystemData) {
         // handle movement on X axis
         if let Some(movement) = input.axis_value("leftright") {
-            if movement != 0.0 {
-                commands.single_write(Command::MoveLeftRight(movement as f32));
-            }
+            commands.single_write(Command::MoveLeftRight(movement as f32));
         }
 
         // handle movement on Y axis
         if let Some(movement) = input.axis_value("updown") {
-            if movement != 0.0 {
-                commands.single_write(Command::MoveUpDown(movement as f32));
-            }
+            commands.single_write(Command::MoveUpDown(movement as f32));
         }
     }
 }

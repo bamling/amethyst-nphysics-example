@@ -10,7 +10,7 @@ Label (
         transparent: true,
     ),
     text: (
-        font: File("font/square.ttf", Ttf, ()),
+        font: File("font/square.ttf", ("TTF", ())),
         text: "Loading",
         color: (1.0, 1.0, 1.0, 1.0),
         font_size: 25.0,

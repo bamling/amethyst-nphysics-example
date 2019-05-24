@@ -1,8 +1,9 @@
 use amethyst::{
-    core::Transform,
     ecs::{prelude::*, Read, ReadExpect, Resources, System, WriteStorage},
     shrev::ReaderId,
 };
+
+use game_physics::Motion;
 
 use crate::resources::{Command, CommandChannel, Player};
 
@@ -18,20 +19,20 @@ impl<'s> System<'s> for MovementSystem {
     type SystemData = (
         Read<'s, CommandChannel>,
         ReadExpect<'s, Player>,
-        WriteStorage<'s, Transform<f32>>,
+        WriteStorage<'s, Motion>,
     );
 
-    fn run(&mut self, (commands, player, mut transforms): Self::SystemData) {
+    fn run(&mut self, (commands, player, mut motions): Self::SystemData) {
         for command in commands.read(self.command_reader.as_mut().unwrap()) {
             match command {
                 Command::MoveUpDown(movement) => {
-                    if let Some(transform) = transforms.get_mut(player.player) {
-                        transform.prepend_translation_y(*movement);
+                    if let Some(motion) = motions.get_mut(player.player) {
+                        motion.set_velocity_y(*movement);
                     }
                 }
                 Command::MoveLeftRight(movement) => {
-                    if let Some(transform) = transforms.get_mut(player.player) {
-                        transform.prepend_translation_x(*movement);
+                    if let Some(motion) = motions.get_mut(player.player) {
+                        motion.set_velocity_x(*movement);
                     }
                 }
             }
