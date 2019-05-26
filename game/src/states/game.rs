@@ -13,7 +13,7 @@ use amethyst::{
     winit::VirtualKeyCode,
 };
 
-use game_physics::{MotionBuilder, PhysicsBodyBuilder, PhysicsColliderBuilder, Shape};
+use game_physics::{body::BodyStatus, PhysicsBodyBuilder, PhysicsColliderBuilder, Shape};
 
 use crate::{resources::Player, systems::GameSystemsBundle};
 
@@ -62,16 +62,6 @@ impl<'a, 'b> SimpleState for GameState<'a, 'b> {
             if is_close_requested(&event) || is_key_down(&event, VirtualKeyCode::Escape) {
                 return Trans::Quit;
             }
-            // TODO: just for testing
-            if is_key_down(&event, VirtualKeyCode::Return) {
-                let player = {
-                    let player = _data.world.read_resource::<Player>();
-                    player.player
-                };
-                _data.world.delete_entity(player);
-
-                return Trans::None;
-            }
         }
 
         // event was not of type StateEvent, so no transition is required
@@ -119,51 +109,41 @@ impl<'a, 'b> GameState<'a, 'b> {
 
     /// Creates the player `Entity` and its corresponding `Player` `Resource`.
     fn initialise_player(&mut self, world: &mut World) {
-        // create the players transform
+        // create the players Transform
         let mut transform = Transform::default();
         transform.set_translation_xyz(25.0, 50.0, 0.0);
 
-        // create player entity
+        // create player Entity
         let player = world
             .create_entity()
             .with(SpriteRender {
                 sprite_sheet: self.character_handle.clone(),
                 sprite_number: 0,
             })
-            .with(MotionBuilder::default().build().unwrap())
-            .with(PhysicsBodyBuilder::new_dynamic().build().unwrap())
-            .with(
-                PhysicsColliderBuilder::from(Shape::Rectangle(7.5, 7.5))
-                    .build()
-                    .unwrap(),
-            )
+            .with(PhysicsBodyBuilder::from(BodyStatus::Dynamic).build())
+            .with(PhysicsColliderBuilder::from(Shape::Rectangle(7.5, 7.5, 1.0)).build())
             .with(transform)
             .build();
 
-        // create the player resource
+        // create the player Resource
         world.add_resource(Player { player });
     }
 
     /// Creates the random obstacle `Entity`s.
     fn initialise_obstacles(&mut self, world: &mut World) {
-        // create the transform
+        // create the Transform
         let mut transform = Transform::default();
         transform.set_translation_xyz(75.0, 50.0, 0.0);
 
-        // create the entity
+        // create the Entity
         world
             .create_entity()
             .with(SpriteRender {
                 sprite_sheet: self.objects_handle.clone(),
                 sprite_number: 0,
             })
-            // TODO: test pushing of moving objects
-            .with(PhysicsBodyBuilder::new_static().build().unwrap())
-            .with(
-                PhysicsColliderBuilder::from(Shape::Rectangle(7.5, 7.5))
-                    .build()
-                    .unwrap(),
-            )
+            .with(PhysicsBodyBuilder::from(BodyStatus::Static).build())
+            .with(PhysicsColliderBuilder::from(Shape::Rectangle(7.5, 7.5, 1.0)).build())
             .with(transform)
             .build();
     }

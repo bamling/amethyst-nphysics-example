@@ -1,77 +1,27 @@
-use amethyst::ecs::{world::Index, Component, DenseVecStorage, FlaggedStorage};
-use nalgebra::Vector2;
-use nphysics::object::{BodyHandle, BodyStatus};
-
 use std::collections::HashMap;
+
+use amethyst::ecs::{world::Index, Component, DenseVecStorage, FlaggedStorage};
+use nalgebra::{Matrix3, Point3, Vector3};
+use nphysics::object::BodyHandle;
+pub use nphysics::object::BodyStatus;
 
 /// The `HashMap` of `Index` to physics `BodyHandle` mappings. This is used for
 /// the mapping of Amethyst `Entity`s based on their unique `Index` to
-/// `RigidBody`s created in the physics `World`.
+/// `RigidBody`s created in the `PhysicsWorld`.
 pub type PhysicsBodyHandles = HashMap<Index, BodyHandle>;
 
-/// Custom exported `Point2` type to prevent collisions with forked `nalgebra`
+/// Custom `Point` type to prevent collisions with forked `nalgebra`
 /// versions.
-pub type Point2 = nalgebra::Point2<f32>;
+pub type Point = Point3<f32>;
 
-/// The `Motion` `Component` contains the `velocity` and the `acceleration` for
-/// a moving `Entity`. These values make up a `RigidBody`s velocity and enable
-/// it to move within the physics `World`.
-#[derive(Builder)]
-#[builder(default)]
-#[builder(pattern = "owned")]
-pub struct Motion {
-    #[builder(setter(skip))]
-    pub(crate) velocity: Vector2<f32>,
-    // TODO: currently not used
-    #[builder(setter(skip))]
-    pub(crate) acceleration: Vector2<f32>,
-}
+/// Custom `Matrix` type to prevent collisions with forked `nalgebra`
+/// versions.
+pub type Matrix = Matrix3<f32>;
 
-impl Component for Motion {
-    type Storage = FlaggedStorage<Self, DenseVecStorage<Self>>;
-}
+/// Custom `Velocity` type based on `nalgebra::Velocity<f32>`.
+pub type Velocity = Vector3<f32>;
 
-impl Default for Motion {
-    /// Creates a `Motion` with default values. `velocity` and `acceleration`
-    /// are initialised as *zero* vectors, e.g.:
-    ///
-    /// ```rust,ignore
-    /// Vector2::<f32>::new(0.0, 0.0)
-    /// ```
-    fn default() -> Self {
-        Self {
-            velocity: Vector2::<f32>::new(0.0, 0.0),
-            acceleration: Vector2::<f32>::new(0.0, 0.0),
-        }
-    }
-}
-
-impl Motion {
-    /// Sets the `velocity` x value. This only affects the x value and preserves
-    /// the current y value.
-    pub fn set_velocity_x(&mut self, x: f32) {
-        self.velocity.x = x;
-    }
-
-    /// Sets the `velocity` y value. This only affects the y value and preserves
-    /// the current x value.
-    pub fn set_velocity_y(&mut self, y: f32) {
-        self.velocity.y = y;
-    }
-
-    // Sets the `velocity` with the given x and y values. This overwrites any
-    // previously set `velocity` values.
-    pub fn set_velocity(&mut self, x: f32, y: f32) {
-        self.velocity = Vector2::<f32>::new(x, y);
-    }
-
-    /// Sets the `acceleration` value with the given x and y values.
-    pub fn set_acceleration(&mut self, x: f32, y: f32) {
-        self.acceleration = Vector2::<f32>::new(x, y);
-    }
-}
-
-/// The `PhysicsBody` `Component` represents a physics `World` `RigidBody` in
+/// The `PhysicsBody` `Component` represents a `PhysicsWorld` `RigidBody` in
 /// Amethyst/specs and contains all the data required for the synchronisation
 /// between both worlds.
 ///
@@ -82,50 +32,19 @@ impl Motion {
 /// - `systems::body::remove_rigid_bodies::RemoveRigidBodiesSystem`
 ///
 /// These `System`s work based on the `PhysicsBody` `Component`s.
-///
-/// Use the *derived* `PhysicsBodyBuilder` to create new instances of
-/// `PhysicsBody`:
-///
-/// ```rust
-/// use game_physics::{body::Point2, PhysicsBodyBuilder};
-///
-/// let physics_body = PhysicsBodyBuilder::new_dynamic()
-///     .gravity_enabled(true)
-///     .angular_inertia(0.01)
-///     .mass(1.3)
-///     .local_center_of_mass(Point2::new(0.0, 0.0))
-///     .build()
-///     .unwrap();
-/// ```
-#[derive(Builder, Clone, Copy, Debug)]
-#[builder(default)]
-#[builder(pattern = "owned")]
+#[derive(Clone, Copy, Debug)]
 pub struct PhysicsBody {
-    #[builder(setter(skip))]
     pub(crate) handle: Option<BodyHandle>,
     pub gravity_enabled: bool,
-    pub(crate) body_status: BodyStatus,
-    pub angular_inertia: f32,
+    pub body_status: BodyStatus,
+    pub velocity: Velocity,
+    pub angular_inertia: Matrix,
     pub mass: f32,
-    pub local_center_of_mass: Point2,
+    pub local_center_of_mass: Point,
 }
 
 impl Component for PhysicsBody {
     type Storage = FlaggedStorage<Self, DenseVecStorage<Self>>;
-}
-
-impl Default for PhysicsBody {
-    /// Creates a `PhysicsBody` with default values.
-    fn default() -> Self {
-        Self {
-            handle: None,
-            gravity_enabled: false,
-            body_status: BodyStatus::Dynamic,
-            angular_inertia: 0.0,
-            mass: 1.2, // most cases require a mass
-            local_center_of_mass: Point2::new(0.0, 0.0),
-        }
-    }
 }
 
 impl PhysicsBody {
@@ -135,28 +54,92 @@ impl PhysicsBody {
     }
 }
 
+/// The `PhysicsBodyBuilder` implements the builder pattern for `PhysicsBody`s
+/// and is the recommended way of instantiating and customising new
+/// `PhysicsBody` instances.
+///
+/// # Example
+///
+/// ```rust
+/// use game_physics::{
+///     body::{BodyStatus, Matrix, Point, Velocity},
+///     PhysicsBodyBuilder,
+/// };
+///
+/// let physics_body = PhysicsBodyBuilder::from(BodyStatus::Dynamic)
+///     .gravity_enabled(true)
+///     .velocity(Velocity::new(1.0, 1.0, 1.0))
+///     .angular_inertia(Matrix::from_diagonal_element(3.0))
+///     .mass(1.3)
+///     .local_center_of_mass(Point::new(0.0, 0.0, 0.0))
+///     .build();
+/// ```
+pub struct PhysicsBodyBuilder {
+    gravity_enabled: bool,
+    body_status: BodyStatus,
+    velocity: Velocity,
+    angular_inertia: Matrix,
+    mass: f32,
+    local_center_of_mass: Point,
+}
+
+impl From<BodyStatus> for PhysicsBodyBuilder {
+    /// Creates a new `PhysicsBodyBuilder` from the given `BodyStatus`. This
+    /// also populates the `PhysicsBody` with sane defaults.
+    fn from(body_status: BodyStatus) -> Self {
+        Self {
+            gravity_enabled: false,
+            body_status,
+            velocity: Velocity::new(0.0, 0.0, 0.0),
+            angular_inertia: Matrix::zeros(),
+            mass: 1.2,
+            local_center_of_mass: Point::new(0.0, 0.0, 0.0),
+        }
+    }
+}
+
 impl PhysicsBodyBuilder {
-    /// Creates a new `PhysicsBodyBuilder` with `body_status` set to
-    /// `BodyStatus::Disabled`.
-    pub fn new_disabled() -> Self {
-        PhysicsBodyBuilder::default().body_status(BodyStatus::Disabled)
+    /// Sets the `gravity_enabled` value of the `PhysicsBodyBuilder`.
+    pub fn gravity_enabled(mut self, gravity_enabled: bool) -> Self {
+        self.gravity_enabled = gravity_enabled;
+        self
     }
 
-    /// Creates a new `PhysicsBodyBuilder` with `body_status` set to
-    /// `BodyStatus::Static`.
-    pub fn new_static() -> Self {
-        PhysicsBodyBuilder::default().body_status(BodyStatus::Static)
+    // Sets the `velocity` value of the `PhysicsBodyBuilder`.
+    pub fn velocity(mut self, velocity: Velocity) -> Self {
+        self.velocity = velocity;
+        self
     }
 
-    /// Creates a new `PhysicsBodyBuilder` with `body_status` set to
-    /// `BodyStatus::Dynamic`.
-    pub fn new_dynamic() -> Self {
-        PhysicsBodyBuilder::default().body_status(BodyStatus::Dynamic)
+    /// Sets the `angular_inertia` value of the `PhysicsBodyBuilder`.
+    pub fn angular_inertia(mut self, angular_inertia: Matrix) -> Self {
+        self.angular_inertia = angular_inertia;
+        self
     }
 
-    /// Creates a new `PhysicsBodyBuilder` with `body_status` set to
-    /// `BodyStatus::Kinematic`.
-    pub fn new_kinematic() -> Self {
-        PhysicsBodyBuilder::default().body_status(BodyStatus::Kinematic)
+    /// Sets the `mass` value of the `PhysicsBodyBuilder`.
+    pub fn mass(mut self, mass: f32) -> Self {
+        self.mass = mass;
+        self
+    }
+
+    /// Sets the `local_center_of_mass` value of the `PhysicsBodyBuilder`.
+    pub fn local_center_of_mass(mut self, local_center_of_mass: Point) -> Self {
+        self.local_center_of_mass = local_center_of_mass;
+        self
+    }
+
+    /// Builds the `PhysicsBody` from the values set in the `PhysicsBodyBuilder`
+    /// instance.
+    pub fn build(self) -> PhysicsBody {
+        PhysicsBody {
+            handle: None,
+            gravity_enabled: self.gravity_enabled,
+            body_status: self.body_status,
+            velocity: self.velocity,
+            angular_inertia: self.angular_inertia,
+            mass: self.mass,
+            local_center_of_mass: self.local_center_of_mass,
+        }
     }
 }

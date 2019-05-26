@@ -27,7 +27,6 @@ use self::{
     },
     physics_stepper::PhysicsStepperSystem,
     sync_gravity::SyncGravitySystem,
-    sync_motions::SyncMotionsSystem,
     sync_positions::SyncPositionsSystem,
 };
 
@@ -35,7 +34,6 @@ mod body;
 mod collider;
 mod physics_stepper;
 mod sync_gravity;
-mod sync_motions;
 mod sync_positions;
 
 /// Bundle containing all `System`s relevant to the game physics.
@@ -44,7 +42,7 @@ pub struct PhysicsBundle;
 
 impl<'a, 'b> SystemBundle<'a, 'b> for PhysicsBundle {
     fn build(self, dispatcher: &mut DispatcherBuilder) -> Result<(), Error> {
-        // synchronise PhysicsBody components with the physics world
+        // synchronise PhysicsBody components with the PhysicsWorld
         dispatcher.add(
             AddRigidBodiesSystem::default(),
             "add_rigid_bodies_system",
@@ -61,7 +59,7 @@ impl<'a, 'b> SystemBundle<'a, 'b> for PhysicsBundle {
             &["add_rigid_bodies_system"],
         );
 
-        // synchronise PhysicsCollider components with the physics world
+        // synchronise PhysicsCollider components with the PhysicsWorld
         dispatcher.add(
             AddCollidersSystem::default(),
             "add_colliders_system",
@@ -78,17 +76,10 @@ impl<'a, 'b> SystemBundle<'a, 'b> for PhysicsBundle {
             &["add_colliders_system"],
         );
 
-        // synchronise Gravity with the physics world
+        // synchronise Gravity with the PhysicsWorld
         dispatcher.add(SyncGravitySystem::default(), "sync_gravity_system", &[]);
 
-        // synchronise Motions with the physics world
-        dispatcher.add(
-            SyncMotionsSystem::default(),
-            "sync_motions_system",
-            &["add_rigid_bodies_system"],
-        );
-
-        // progress the physics world
+        // progress the PhysicsWorld
         dispatcher.add(
             PhysicsStepperSystem::default(),
             "physics_stepper_system",
@@ -100,11 +91,10 @@ impl<'a, 'b> SystemBundle<'a, 'b> for PhysicsBundle {
                 "update_colliders_system",
                 "remove_colliders_system",
                 "sync_gravity_system",
-                "sync_motions_system",
             ],
         );
 
-        // synchronise updated position from physics world with Amethyst
+        // synchronise updated position from PhysicsWorld with Amethyst
         dispatcher.add(
             SyncPositionsSystem::default(),
             "sync_positions_system",

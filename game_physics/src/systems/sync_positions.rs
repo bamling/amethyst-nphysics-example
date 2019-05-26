@@ -2,12 +2,12 @@ use amethyst::{
     core::{Float, Transform},
     ecs::{Join, ReadExpect, ReadStorage, System, WriteStorage},
 };
-use nalgebra::Isometry2;
+use nalgebra::Isometry3;
 
 use crate::{body::PhysicsBody, PhysicsWorld};
 
 /// The `SyncPositionsSystem` synchronised the updated position of the
-/// `RigidBody`s in the physics `World` with their Amethyst counterparts. This
+/// `RigidBody`s in the `PhysicsWorld` with their Amethyst counterparts. This
 /// affects the actual `Transform` `Component` related to the `Entity`.
 #[derive(Default)]
 pub struct SyncPositionsSystem;
@@ -25,16 +25,12 @@ impl<'s> System<'s> for SyncPositionsSystem {
         // iterate over all PhysicBody components that also come with a Transform
         for (physics_body, transform) in (&physics_bodies, &mut transforms).join() {
             if let Some(rigid_body) = physics_world.rigid_body(physics_body.handle.unwrap()) {
-                let isometry: &Isometry2<f32> = rigid_body.position();
-                let translation_z = {
-                    let z = transform.translation().z;
-                    z
-                };
+                let isometry: &Isometry3<f32> = rigid_body.position();
 
                 transform.set_translation_xyz(
                     Float::from(isometry.translation.vector.x),
                     Float::from(isometry.translation.vector.y),
-                    translation_z,
+                    Float::from(isometry.translation.vector.z),
                 );
             }
         }

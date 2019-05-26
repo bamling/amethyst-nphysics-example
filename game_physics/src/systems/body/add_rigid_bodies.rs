@@ -13,8 +13,8 @@ use amethyst::{
         WriteStorage,
     },
 };
-use nalgebra::Vector2;
-use nphysics::object::RigidBodyDesc;
+use nalgebra::Vector3;
+use nphysics::{math::Velocity, object::RigidBodyDesc};
 
 use crate::{
     body::{PhysicsBody, PhysicsBodyHandles},
@@ -23,7 +23,7 @@ use crate::{
 };
 
 /// The `AddRigidBodiesSystem` handles the creation of new `RigidBody`s in the
-/// physics `World` instance based on inserted `ComponentEvent`s for the
+/// `PhysicsWorld` instance based on inserted `ComponentEvent`s for the
 /// `PhysicsBody` `Component`. A `RigidBody` can only be created if the `Entity`
 /// that belongs to the `PhysicsBody` also contains a `Transform` `Component`.
 #[derive(Default)]
@@ -52,7 +52,7 @@ impl<'s> System<'s> for AddRigidBodiesSystem {
 
         // iterate over inserted PhysicBody components for entities that also have a
         // Transform component; others are ignored as they cannot be positioned
-        // in the physics world
+        // in the PhysicsWorld
         for (entity, mut physics_body, transform, id) in (
             &entities,
             &mut physics_bodies,
@@ -63,24 +63,30 @@ impl<'s> System<'s> for AddRigidBodiesSystem {
         {
             debug!("Inserted PhysicsBody with id: {}", id);
             // remove already existing bodies for this inserted component;
-            // this technically            // should never happen but we need to
-            // keep the list of body handles clean
+            // this technically should never happen but we need to keep the list of body
+            // handles clean
             if let Some(handle) = physics_body_handles.remove(&id) {
                 warn!("Removing orphaned body handle: {:?}", handle);
                 physics_world.remove_bodies(&[handle]);
             }
 
-            // create a new RigidBody in the physics world and store its
+            let delta_time = physics_world.timestep();
+
+            // create a new RigidBody in the PhysicsWorld and store its
             // handle for later usage
             let handle = RigidBodyDesc::new()
-                .translation(Vector2::new(
+                .translation(Vector3::new(
                     transform.translation().x.as_f32(),
                     transform.translation().y.as_f32(),
+                    transform.translation().z.as_f32(),
                 ))
                 .gravity_enabled(physics_body.gravity_enabled)
                 .status(physics_body.body_status)
-                // velocity is set via Motion component
-                //.velocity(body.velocity)
+                .velocity(Velocity::<f32>::linear(
+                    physics_body.velocity.x / delta_time,
+                    physics_body.velocity.y / delta_time,
+                    physics_body.velocity.z / delta_time,
+                ))
                 .angular_inertia(physics_body.angular_inertia)
                 .mass(physics_body.mass)
                 .local_center_of_mass(physics_body.local_center_of_mass)

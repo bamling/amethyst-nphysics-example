@@ -16,7 +16,7 @@ use crate::{
 };
 
 /// The `RemoveRigidBodiesSystem` handles the removal of a `PhysicsBody`s
-/// corresponding `RigidBody` from the physics `World`. This happens based on
+/// corresponding `RigidBody` from `PhysicsWorld`. This happens based on
 /// `ComponentEvent::Removed` for the `PhysicsBody` `Component`.
 #[derive(Default)]
 pub struct RemoveRigidBodiesSystem {
@@ -42,7 +42,7 @@ impl<'s> System<'s> for RemoveRigidBodiesSystem {
         ) {
             debug!("Removed PhysicsBody with id: {}", id);
             if let Some(handle) = physics_body_handles.remove(&id) {
-                // remove body if it still exists in the physics world
+                // remove body if it still exists in the PhysicsWorld
                 physics_world.remove_bodies(&[handle]);
                 info!("Removed rigid body from world with id: {}", id);
             }

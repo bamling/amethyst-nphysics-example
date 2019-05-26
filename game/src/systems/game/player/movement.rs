@@ -3,7 +3,7 @@ use amethyst::{
     shrev::ReaderId,
 };
 
-use game_physics::Motion;
+use game_physics::PhysicsBody;
 
 use crate::resources::{Command, CommandChannel, Player};
 
@@ -19,20 +19,20 @@ impl<'s> System<'s> for MovementSystem {
     type SystemData = (
         Read<'s, CommandChannel>,
         ReadExpect<'s, Player>,
-        WriteStorage<'s, Motion>,
+        WriteStorage<'s, PhysicsBody>,
     );
 
-    fn run(&mut self, (commands, player, mut motions): Self::SystemData) {
+    fn run(&mut self, (commands, player, mut physics_bodies): Self::SystemData) {
         for command in commands.read(self.command_reader.as_mut().unwrap()) {
             match command {
                 Command::MoveUpDown(movement) => {
-                    if let Some(motion) = motions.get_mut(player.player) {
-                        motion.set_velocity_y(*movement);
+                    if let Some(physics_body) = physics_bodies.get_mut(player.player) {
+                        physics_body.velocity.y = *movement;
                     }
                 }
                 Command::MoveLeftRight(movement) => {
-                    if let Some(motion) = motions.get_mut(player.player) {
-                        motion.set_velocity_x(*movement);
+                    if let Some(physics_body) = physics_bodies.get_mut(player.player) {
+                        physics_body.velocity.x = *movement;
                     }
                 }
             }

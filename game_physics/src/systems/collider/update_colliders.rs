@@ -13,7 +13,7 @@ use amethyst::ecs::{
 use crate::{collider::PhysicsCollider, systems::modified_components, PhysicsWorld};
 
 /// The `UpdateCollidersSystems` the synchronisation of updated
-/// `PhysicsCollider` `Component`s with their physics `World` counterparts. This
+/// `PhysicsCollider` `Component`s with their `PhysicsWorld` counterparts. This
 /// happens based on `ComponentEvent::Modified` for the `PhysicsCollider`
 /// `Component`.
 #[derive(Default)]
@@ -64,7 +64,7 @@ impl<'s> System<'s> for UpdateCollidersSystems {
             // TODO:
             // update anything else?
 
-            info!(
+            trace!(
                 "Updated collider in world with values: {:?}",
                 physics_collider
             );

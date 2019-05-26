@@ -18,6 +18,6 @@ impl<'s> System<'s> for SyncGravitySystem {
 
         // initialise required resources
         res.entry::<Gravity>()
-            .or_insert_with(|| Gravity::new(0.0, 0.0));
+            .or_insert_with(|| Gravity::new(0.0, 0.0, 0.0));
     }
 }

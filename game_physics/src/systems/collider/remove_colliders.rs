@@ -16,7 +16,7 @@ use crate::{
 };
 
 /// The `RemoveCollidersSystem` handles the removal of a `PhysicsCollider`s
-///// corresponding `Collider` from the physics `World`. This happens based on
+///// corresponding `Collider` from the `PhysicsWorld`. This happens based on
 ///// `ComponentEvent::Removed` for the `PhysicsCollider` `Component`.
 #[derive(Default)]
 pub struct RemoveCollidersSystem {
@@ -42,7 +42,7 @@ impl<'s> System<'s> for RemoveCollidersSystem {
         ) {
             debug!("Removed PhysicsCollider with id: {}", id);
             if let Some(handle) = physics_collider_handles.remove(&id) {
-                // remove body if it still exists in the physics world
+                // remove body if it still exists in the PhysicsWorld
                 if physics_world.collider(handle).is_some() {
                     physics_world.remove_colliders(&[handle]);
                 }

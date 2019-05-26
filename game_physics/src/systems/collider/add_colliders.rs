@@ -21,7 +21,7 @@ use crate::{
 use nphysics::object::{BodyHandle, BodyPartHandle, ColliderDesc};
 
 /// The `AddCollidersSystem` handles the creation of new `Collider`s in the
-/// physics `World` instance based on inserted `ComponentEvent`s for the
+/// `PhysicsWorld` instance based on inserted `ComponentEvent`s for the
 /// `PhysicsCollider` `Component`.
 #[derive(Default)]
 pub struct AddCollidersSystem {
@@ -72,7 +72,7 @@ impl<'s> System<'s> for AddCollidersSystem {
                 .get(&id)
                 .map_or(BodyHandle::ground(), |handle| *handle);
 
-            // attempt to find the actual RigidBody from the physics world and
+            // attempt to find the actual RigidBody from the PhysicsWorld and
             // fetch its BodyPartHandle; if no RigidBody is found, default to
             // BodyPartHandle::ground()
             let parent_part_handle = physics_world

@@ -19,10 +19,14 @@ impl<'s> System<'s> for PhysicsStepperSystem {
         physics_world.step();
 
         // print collisions for debug purposes
-        //let collision_world = physics_world.collider_world();
-        //collision_world.contact_events().iter().for_each(|event| {
-        //    info!("Got Contact: {:?}", event);
-        //});
+        let collision_world = physics_world.collider_world();
+        collision_world.contact_events().iter().for_each(|event| {
+            info!("Got Contact: {:?}", event);
+        });
+
+        collision_world.proximity_events().iter().for_each(|event| {
+            info!("Got Proximity: {:?}", event);
+        });
     }
 
     fn setup(&mut self, res: &mut Resources) {
