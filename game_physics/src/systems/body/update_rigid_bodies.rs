@@ -61,7 +61,7 @@ impl<'s> System<'s> for UpdateRigidBodiesSystems {
             debug!("Modified PhysicsBody with id: {}", id);
             let delta_time = physics_world.timestep();
 
-            if let Some(rigid_body) = physics_world.rigid_body_mut(physics_body.handle().unwrap()) {
+            if let Some(rigid_body) = physics_world.rigid_body_mut(physics_body.handle.unwrap()) {
                 // the PhysicsBody was modified, update everything but the position
                 if modified_physics_bodies.contains(id) {
                     rigid_body.enable_gravity(physics_body.gravity_enabled);

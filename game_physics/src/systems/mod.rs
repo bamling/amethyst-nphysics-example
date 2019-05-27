@@ -83,6 +83,22 @@ impl<'a, 'b> SystemBundle<'a, 'b> for PhysicsBundle {
         // synchronise Gravity with the PhysicsWorld
         dispatcher.add(SyncGravitySystem::default(), "sync_gravity_system", &[]);
 
+        // enable DebugSystem on demand
+        if self.debug_lines {
+            dispatcher.add(
+                DebugSystem::default(),
+                "debug_system",
+                &[
+                    "add_rigid_bodies_system",
+                    "update_rigid_bodies_system",
+                    "remove_rigid_bodies_system",
+                    "add_colliders_system",
+                    "update_colliders_system",
+                    "remove_colliders_system",
+                ],
+            );
+        }
+
         // progress the PhysicsWorld
         dispatcher.add(
             PhysicsStepperSystem::default(),
@@ -104,11 +120,6 @@ impl<'a, 'b> SystemBundle<'a, 'b> for PhysicsBundle {
             "sync_positions_system",
             &["physics_stepper_system"],
         );
-
-        // enable DebugSystem on demand
-        if self.debug_lines {
-            dispatcher.add(DebugSystem::default(), "debug_system", &[]);
-        }
 
         Ok(())
     }

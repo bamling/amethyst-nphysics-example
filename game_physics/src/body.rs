@@ -47,13 +47,6 @@ impl Component for PhysicsBody {
     type Storage = FlaggedStorage<Self, DenseVecStorage<Self>>;
 }
 
-impl PhysicsBody {
-    /// Returns the optional `BodyHandle`.
-    pub fn handle(&self) -> Option<BodyHandle> {
-        self.handle
-    }
-}
-
 /// The `PhysicsBodyBuilder` implements the builder pattern for `PhysicsBody`s
 /// and is the recommended way of instantiating and customising new
 /// `PhysicsBody` instances.
