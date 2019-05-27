@@ -22,4 +22,9 @@ Execute [Cargo](https://doc.rust-lang.org/cargo/):
 $ cargo run
 ```
 
+#### TODOs:
 
+- [ ] Allow multiple `PhysicsCollider`s per `Entity`
+- [ ] Allow `PhysicsCollider`s without `PhysicsBody`
+- [ ] Add more `Shape`s
+- [ ] Add other debug shapes 
