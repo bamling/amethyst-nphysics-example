@@ -10,7 +10,7 @@ use amethyst::{
     input::{InputBundle, StringBindings},
     prelude::*,
     renderer::{
-        pass::DrawFlat2DDesc,
+        pass::{DrawDebugLinesDesc, DrawFlat2DDesc},
         rendy::{
             factory::Factory,
             graph::{
@@ -38,7 +38,26 @@ mod states;
 mod systems;
 
 fn main() -> amethyst::Result<()> {
-    amethyst::start_logger(Default::default());
+    //amethyst::start_logger(Default::default());
+    amethyst::Logger::from_config(Default::default())
+        .level_for("gfx_backend_vulkan", amethyst::LogLevelFilter::Warn)
+        .level_for("rendy_factory::factory", amethyst::LogLevelFilter::Warn)
+        .level_for(
+            "rendy_memory::allocator::dynamic",
+            amethyst::LogLevelFilter::Warn,
+        )
+        .level_for(
+            "rendy_graph::node::render::pass",
+            amethyst::LogLevelFilter::Warn,
+        )
+        .level_for("rendy_graph::node::present", amethyst::LogLevelFilter::Warn)
+        .level_for("rendy_graph::graph", amethyst::LogLevelFilter::Warn)
+        .level_for(
+            "rendy_memory::allocator::linear",
+            amethyst::LogLevelFilter::Warn,
+        )
+        .level_for("rendy_wsi", amethyst::LogLevelFilter::Warn)
+        .start();
 
     let app_root = application_root_dir()?;
 
@@ -55,7 +74,7 @@ fn main() -> amethyst::Result<()> {
             InputBundle::<StringBindings>::new().with_bindings_from_file(key_bindings_path)?,
         )?
         .with_bundle(UiBundle::<DefaultBackend, StringBindings>::new())?
-        .with_bundle(PhysicsBundle)? // TODO: move to custom game data?!
+        .with_bundle(PhysicsBundle::default().with_debug_lines())? // TODO: move to custom game data?!
         .with(
             Processor::<SpriteSheet>::new(),
             "sprite_sheet_processor",
@@ -155,6 +174,7 @@ impl GraphCreator<DefaultBackend> for ExampleGraph {
         // We pass the subpass builder a description of our pass for construction
         let sprite = graph_builder.add_node(
             SubpassBuilder::new()
+                .with_group(DrawDebugLinesDesc::new().builder())
                 .with_group(DrawFlat2DDesc::new().builder())
                 .with_color(color)
                 .with_depth_stencil(depth)

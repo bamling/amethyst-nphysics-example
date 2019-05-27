@@ -1,5 +1,5 @@
 use amethyst::{
-    core::Transform,
+    core::transform::Transform,
     ecs::{
         storage::ComponentEvent,
         Entities,

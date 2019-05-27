@@ -14,6 +14,7 @@ impl<'s> System<'s> for SyncGravitySystem {
     }
 
     fn setup(&mut self, res: &mut Resources) {
+        info!("SyncGravitySystem.setup");
         Self::SystemData::setup(res);
 
         // initialise required resources

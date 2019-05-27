@@ -1,7 +1,7 @@
 use crate::{body::PhysicsBody, systems::modified_components, PhysicsWorld};
 
 use amethyst::{
-    core::Transform,
+    core::transform::Transform,
     ecs::{
         storage::ComponentEvent,
         Join,

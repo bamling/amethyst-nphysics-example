@@ -1,6 +1,6 @@
 use amethyst::{
     core::{Float, Transform},
-    ecs::{Join, ReadExpect, ReadStorage, System, WriteStorage},
+    ecs::{Join, ReadExpect, ReadStorage, Resources, System, SystemData, WriteStorage},
 };
 use nalgebra::Isometry3;
 
@@ -34,5 +34,10 @@ impl<'s> System<'s> for SyncPositionsSystem {
                 );
             }
         }
+    }
+
+    fn setup(&mut self, res: &mut Resources) {
+        info!("SyncPositionsSystem.setup");
+        Self::SystemData::setup(res);
     }
 }

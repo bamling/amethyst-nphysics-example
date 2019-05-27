@@ -30,6 +30,7 @@ impl<'s> System<'s> for PhysicsStepperSystem {
     }
 
     fn setup(&mut self, res: &mut Resources) {
+        info!("PhysicsStepperSystem.setup");
         Self::SystemData::setup(res);
 
         // initialise required resources

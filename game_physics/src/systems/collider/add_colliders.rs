@@ -86,7 +86,7 @@ impl<'s> System<'s> for AddCollidersSystem {
             //} else {
             //    collider.offset_from_parent
             //};
-            let handle = ColliderDesc::new(physics_collider.shape.clone())
+            let handle = ColliderDesc::new(physics_collider.shape.handle())
                 .translation(physics_collider.offset_from_parent.translation.vector)
                 .density(physics_collider.density)
                 .material(physics_collider.material.clone())

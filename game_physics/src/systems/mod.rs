@@ -25,6 +25,7 @@ use self::{
         remove_colliders::RemoveCollidersSystem,
         update_colliders::UpdateCollidersSystems,
     },
+    debug::DebugSystem,
     physics_stepper::PhysicsStepperSystem,
     sync_gravity::SyncGravitySystem,
     sync_positions::SyncPositionsSystem,
@@ -32,13 +33,16 @@ use self::{
 
 mod body;
 mod collider;
+mod debug;
 mod physics_stepper;
 mod sync_gravity;
 mod sync_positions;
 
 /// Bundle containing all `System`s relevant to the game physics.
 #[derive(Default)]
-pub struct PhysicsBundle;
+pub struct PhysicsBundle {
+    debug_lines: bool,
+}
 
 impl<'a, 'b> SystemBundle<'a, 'b> for PhysicsBundle {
     fn build(self, dispatcher: &mut DispatcherBuilder) -> Result<(), Error> {
@@ -101,7 +105,21 @@ impl<'a, 'b> SystemBundle<'a, 'b> for PhysicsBundle {
             &["physics_stepper_system"],
         );
 
+        // enable DebugSystem on demand
+        if self.debug_lines {
+            dispatcher.add(DebugSystem::default(), "debug_system", &[]);
+        }
+
         Ok(())
+    }
+}
+
+impl PhysicsBundle {
+    /// Enables the `DebugSystem` which draws `DebugLines` around
+    /// `PhysicsCollider` shapes.
+    pub fn with_debug_lines(mut self) -> Self {
+        self.debug_lines = true;
+        self
     }
 }
 

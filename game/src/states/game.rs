@@ -121,7 +121,7 @@ impl<'a, 'b> GameState<'a, 'b> {
                 sprite_number: 0,
             })
             .with(PhysicsBodyBuilder::from(BodyStatus::Dynamic).build())
-            .with(PhysicsColliderBuilder::from(Shape::Rectangle(7.5, 7.5, 1.0)).build())
+            .with(PhysicsColliderBuilder::from(Shape::Rectangle(15.0, 22.0, 1.0)).build())
             .with(transform)
             .build();
 
@@ -143,7 +143,7 @@ impl<'a, 'b> GameState<'a, 'b> {
                 sprite_number: 0,
             })
             .with(PhysicsBodyBuilder::from(BodyStatus::Static).build())
-            .with(PhysicsColliderBuilder::from(Shape::Rectangle(7.5, 7.5, 1.0)).build())
+            .with(PhysicsColliderBuilder::from(Shape::Rectangle(15.0, 16.0, 1.0)).build())
             .with(transform)
             .build();
     }

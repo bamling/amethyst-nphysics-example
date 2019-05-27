@@ -44,7 +44,11 @@ impl Shape {
     pub(crate) fn handle(&self) -> ShapeHandle<f32> {
         match *self {
             Shape::Circle(radius) => ShapeHandle::new(Ball::new(radius)),
-            Shape::Rectangle(x, y, z) => ShapeHandle::new(Cuboid::new(Vector3::new(x, y, z))),
+            Shape::Rectangle(width, height, depth) => ShapeHandle::new(Cuboid::new(Vector3::new(
+                width / 2.0,
+                height / 2.0,
+                depth / 2.0,
+            ))),
         }
     }
 }
@@ -64,7 +68,7 @@ impl Shape {
 #[derive(Clone)]
 pub struct PhysicsCollider {
     pub(crate) handle: Option<ColliderHandle>,
-    pub shape: ShapeHandle<f32>,
+    pub shape: Shape,
     pub offset_from_parent: Isometry,
     pub density: f32,
     pub material: MaterialHandle<f32>,
@@ -129,7 +133,7 @@ impl fmt::Debug for PhysicsCollider {
 ///     .build();
 /// ```
 pub struct PhysicsColliderBuilder {
-    shape: ShapeHandle<f32>,
+    shape: Shape,
     offset_from_parent: Isometry,
     density: f32,
     material: MaterialHandle<f32>,
@@ -145,7 +149,7 @@ impl From<Shape> for PhysicsColliderBuilder {
     //  also populates the `PhysicsCollider` with sane defaults.
     fn from(shape: Shape) -> Self {
         Self {
-            shape: shape.handle(),
+            shape,
             offset_from_parent: Isometry::identity(),
             density: 1.3,
             material: MaterialHandle::new(BasicMaterial::default()),
