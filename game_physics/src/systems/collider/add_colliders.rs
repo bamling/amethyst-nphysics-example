@@ -1,15 +1,21 @@
-use amethyst::ecs::{
-    storage::ComponentEvent,
-    Entities,
-    Join,
-    ReadExpect,
-    ReaderId,
-    Resources,
-    System,
-    SystemData,
-    WriteExpect,
-    WriteStorage,
+use amethyst::{
+    core::{transform::Transform, Parent},
+    ecs::{
+        storage::ComponentEvent,
+        Entities,
+        Join,
+        ReadExpect,
+        ReadStorage,
+        ReaderId,
+        Resources,
+        System,
+        SystemData,
+        WriteExpect,
+        WriteStorage,
+    },
 };
+use nalgebra::Vector3;
+use nphysics::object::{BodyPartHandle, ColliderDesc};
 
 use crate::{
     body::PhysicsBodyHandles,
@@ -17,8 +23,6 @@ use crate::{
     systems::inserted_components,
     PhysicsWorld,
 };
-
-use nphysics::object::{BodyHandle, BodyPartHandle, ColliderDesc};
 
 /// The `AddCollidersSystem` handles the creation of new `Collider`s in the
 /// `PhysicsWorld` instance based on inserted `ComponentEvent`s for the
@@ -32,6 +36,8 @@ impl<'s> System<'s> for AddCollidersSystem {
     type SystemData = (
         Entities<'s>,
         ReadExpect<'s, PhysicsBodyHandles>,
+        ReadStorage<'s, Parent>,
+        ReadStorage<'s, Transform>,
         WriteExpect<'s, PhysicsColliderHandles>,
         WriteExpect<'s, PhysicsWorld>,
         WriteStorage<'s, PhysicsCollider>,
@@ -41,6 +47,8 @@ impl<'s> System<'s> for AddCollidersSystem {
         let (
             entities,
             physics_body_handles,
+            parent_entities,
+            transforms,
             mut physics_collider_handles,
             mut physics_world,
             mut physics_colliders,
@@ -54,8 +62,9 @@ impl<'s> System<'s> for AddCollidersSystem {
 
         // iterate over inserted PhysicsCollider components and their entities; the
         // entity is used as user data in the Collider creation
-        for (entity, mut physics_collider, id) in (
-            &entities,
+        for (parent_entity, transform, mut physics_collider, id) in (
+            parent_entities.maybe(),
+            &transforms,
             &mut physics_colliders,
             &inserted_physics_colliders,
         )
@@ -67,27 +76,52 @@ impl<'s> System<'s> for AddCollidersSystem {
                 physics_world.remove_colliders(&[handle]);
             }
 
-            // attempt to find the parents handle; default to BodyHandle::ground()
-            let parent_handle = physics_body_handles
-                .get(&id)
-                .map_or(BodyHandle::ground(), |handle| *handle);
+            // attempt to find the parent BodyPartHandle based on stored BodyHandles for the
+            // given Entity/Index
+            let parent_part_handle = match physics_body_handles.get(&id) {
+                Some(parent_handle) => physics_world
+                    .rigid_body(*parent_handle)
+                    .map_or(BodyPartHandle::ground(), |body| body.part_handle()),
+                None => {
+                    // if BodyHandle was found for the current Entity/Index, check for a potential
+                    // parent Entity and repeat the first step
+                    if let Some(parent_entity) = parent_entity {
+                        match physics_body_handles.get(&parent_entity.entity.id()) {
+                            Some(parent_handle) => physics_world
+                                .rigid_body(*parent_handle)
+                                .map_or(BodyPartHandle::ground(), |body| body.part_handle()),
+                            None => {
+                                // ultimately default to BodyPartHandle::ground()
+                                BodyPartHandle::ground()
+                            }
+                        }
+                    } else {
+                        // no parent Entity exists, default to BodyPartHandle::ground()
+                        BodyPartHandle::ground()
+                    }
+                }
+            };
 
-            // attempt to find the actual RigidBody from the PhysicsWorld and
-            // fetch its BodyPartHandle; if no RigidBody is found, default to
-            // BodyPartHandle::ground()
-            let parent_part_handle = physics_world
-                .rigid_body(parent_handle)
-                .map(|body| body.part_handle())
-                .unwrap_or(BodyPartHandle::ground());
+            // translation based on parent handle
+            let translation = if parent_part_handle.is_ground() {
+                let (offset_x, offset_y, offset_z) = (
+                    physics_collider.offset_from_parent.translation.vector.x,
+                    physics_collider.offset_from_parent.translation.vector.y,
+                    physics_collider.offset_from_parent.translation.vector.z,
+                );
 
-            // TODO: is this still relevant?
-            //let position = if parent.is_ground() {
-            //    tr.isometry() * collider.offset_from_parent
-            //} else {
-            //    collider.offset_from_parent
-            //};
-            let handle = ColliderDesc::new(physics_collider.shape.handle())
-                .translation(physics_collider.offset_from_parent.translation.vector)
+                Vector3::<f32>::new(
+                    transform.translation().x.as_f32() + offset_x,
+                    transform.translation().y.as_f32() + offset_y,
+                    transform.translation().z.as_f32() + offset_z,
+                )
+            } else {
+                physics_collider.offset_from_parent.translation.vector
+            };
+
+            // create the actual Collider in the PhysicsWorld and fetch its handle
+            let handle = ColliderDesc::new(physics_collider.shape_handle())
+                .translation(translation)
                 .density(physics_collider.density)
                 .material(physics_collider.material.clone())
                 .margin(physics_collider.margin)
@@ -95,7 +129,7 @@ impl<'s> System<'s> for AddCollidersSystem {
                 .linear_prediction(physics_collider.linear_prediction)
                 .angular_prediction(physics_collider.angular_prediction)
                 .sensor(physics_collider.sensor)
-                .user_data(entity)
+                .user_data(entities.entity(id))
                 .build_with_parent(parent_part_handle, &mut physics_world)
                 .unwrap()
                 .handle();

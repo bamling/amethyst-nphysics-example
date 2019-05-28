@@ -39,30 +39,12 @@ impl<'s> System<'s> for UpdateCollidersSystems {
         // iterate over all modified PhysicsCollider components
         for (physics_collider, id) in (&physics_colliders, &modified_physics_colliders).join() {
             debug!("Modified PhysicsCollider with id: {}", id);
-            // TODO: is this still relevant?
-            //let parent_handle = if let Some(handle) = physics_body_handles.get(&entity) {
-            //    trace!("Updating collider to rigid body: {:?}", entity);
-            //    *handle
-            //} else {
-            //    trace!("Updating collider to ground.");
-            //    BodyHandle::ground()
-            //};
-            //
-            //let position = if parent.is_ground() {
-            //    tr.isometry() * collider.offset_from_parent
-            //} else {
-            //    collider.offset_from_parent
-            //};
-
             let collider_handle = physics_collider.handle.unwrap();
             let collider_world = physics_world.collider_world_mut();
 
             // update collision groups
             collider_world
                 .set_collision_groups(collider_handle.clone(), physics_collider.collision_group);
-
-            // TODO:
-            // update anything else?
 
             trace!(
                 "Updated collider in world with values: {:?}",

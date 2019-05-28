@@ -41,13 +41,13 @@ impl Shape {
     /// Converts a `Shape` and its values into its corresponding `ShapeHandle`
     /// type. The `ShapeHandle` is used to define a `Collider` in the
     /// `PhysicsWorld`.
-    pub(crate) fn handle(&self) -> ShapeHandle<f32> {
+    fn handle(&self, margin: f32) -> ShapeHandle<f32> {
         match *self {
             Shape::Circle(radius) => ShapeHandle::new(Ball::new(radius)),
             Shape::Rectangle(width, height, depth) => ShapeHandle::new(Cuboid::new(Vector3::new(
-                width / 2.0,
-                height / 2.0,
-                depth / 2.0,
+                width / 2.0 - margin,
+                height / 2.0 - margin,
+                depth / 2.0 - margin,
             ))),
         }
     }
@@ -110,6 +110,14 @@ impl fmt::Debug for PhysicsCollider {
     }
 }
 
+impl PhysicsCollider {
+    /// Returns the `ShapeHandle` for `shape`, taking the `margin` into
+    /// consideration.
+    pub(crate) fn shape_handle(&self) -> ShapeHandle<f32> {
+        self.shape.handle(self.margin)
+    }
+}
+
 /// The `PhysicsColliderBuilder` implements the builder pattern for
 /// `PhysicsCollider`s and is the recommended way of instantiating and
 /// customising new `PhysicsCollider` instances.
@@ -153,7 +161,7 @@ impl From<Shape> for PhysicsColliderBuilder {
             offset_from_parent: Isometry::identity(),
             density: 1.3,
             material: MaterialHandle::new(BasicMaterial::default()),
-            margin: 0.01,
+            margin: 0.2, // default was: 0.01
             collision_groups: CollisionGroups::default(),
             linear_prediction: 0.002,
             angular_prediction: PI / 180.0 * 5.0,

@@ -61,7 +61,8 @@ impl SimpleState for LoadingState {
         self.character_handle =
             Some(self.load_sprite_sheet("texture/character.png", "texture/character.ron", world));
         self.objects_handle =
-            Some(self.load_sprite_sheet("texture/objects.png", "texture/objects.ron", world));
+            //Some(self.load_sprite_sheet("texture/objects.png", "texture/objects.ron", world));
+            Some(self.load_sprite_sheet("texture/custom.png", "texture/custom.ron", world));
     }
 
     fn on_stop(&mut self, _data: StateData<GameData>) {

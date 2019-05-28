@@ -1,6 +1,6 @@
 use amethyst::{
     assets::{Handle, Prefab},
-    core::{transform::Transform, SystemBundle},
+    core::{math::Vector3, transform::Transform, Parent, SystemBundle},
     ecs::prelude::*,
     input::{is_close_requested, is_key_down},
     prelude::*,
@@ -13,7 +13,13 @@ use amethyst::{
     winit::VirtualKeyCode,
 };
 
-use game_physics::{body::BodyStatus, PhysicsBodyBuilder, PhysicsColliderBuilder, Shape};
+use game_physics::{
+    body::BodyStatus,
+    collider::Isometry,
+    PhysicsBodyBuilder,
+    PhysicsColliderBuilder,
+    Shape,
+};
 
 use crate::{resources::Player, systems::GameSystemsBundle};
 
@@ -62,6 +68,16 @@ impl<'a, 'b> SimpleState for GameState<'a, 'b> {
             if is_close_requested(&event) || is_key_down(&event, VirtualKeyCode::Escape) {
                 return Trans::Quit;
             }
+            // TODO: just for testing
+            if is_key_down(&event, VirtualKeyCode::Return) {
+                let player = {
+                    let player = _data.world.read_resource::<Player>();
+                    player.player
+                };
+                _data.world.delete_entity(player);
+
+                return Trans::None;
+            }
         }
 
         // event was not of type StateEvent, so no transition is required
@@ -109,10 +125,6 @@ impl<'a, 'b> GameState<'a, 'b> {
 
     /// Creates the player `Entity` and its corresponding `Player` `Resource`.
     fn initialise_player(&mut self, world: &mut World) {
-        // create the players Transform
-        let mut transform = Transform::default();
-        transform.set_translation_xyz(25.0, 50.0, 0.0);
-
         // create player Entity
         let player = world
             .create_entity()
@@ -122,7 +134,20 @@ impl<'a, 'b> GameState<'a, 'b> {
             })
             .with(PhysicsBodyBuilder::from(BodyStatus::Dynamic).build())
             .with(PhysicsColliderBuilder::from(Shape::Rectangle(15.0, 22.0, 1.0)).build())
-            .with(transform)
+            .with(Transform::from(Vector3::new(25.0, 50.0, 0.0)))
+            .build();
+
+        //// add second PhysicsCollider via child Entity
+        world
+            .create_entity()
+            .with(
+                PhysicsColliderBuilder::from(Shape::Rectangle(10.0, 5.0, 1.0))
+                    .offset_from_parent(Isometry::translation(7.5, 0.0, 0.0))
+                    .sensor(true)
+                    .build(),
+            )
+            .with(Parent { entity: player })
+            .with(Transform::from(Vector3::new(25.0, 50.0, 0.0)))
             .build();
 
         // create the player Resource
@@ -131,9 +156,8 @@ impl<'a, 'b> GameState<'a, 'b> {
 
     /// Creates the random obstacle `Entity`s.
     fn initialise_obstacles(&mut self, world: &mut World) {
-        // create the Transform
-        let mut transform = Transform::default();
-        transform.set_translation_xyz(75.0, 50.0, 0.0);
+        let mut transform = Transform::from(Vector3::new(75.0, 50.0, 0.0));
+        transform.set_scale(Vector3::new(0.5, 0.5, 1.0));
 
         // create the Entity
         world
@@ -143,7 +167,13 @@ impl<'a, 'b> GameState<'a, 'b> {
                 sprite_number: 0,
             })
             .with(PhysicsBodyBuilder::from(BodyStatus::Static).build())
-            .with(PhysicsColliderBuilder::from(Shape::Rectangle(15.0, 16.0, 1.0)).build())
+            //.with(PhysicsColliderBuilder::from(Shape::Rectangle(15.0, 16.0, 1.0)).build())
+            .with(
+                PhysicsColliderBuilder::from(Shape::Rectangle(15.0, 12.0, 1.0))
+                    .offset_from_parent(Isometry::translation(0.0, -4.0, 0.0))
+                    .build(),
+            )
+            //.with(Transform::from(Vector3::new(75.0, 50.0, 0.0)))
             .with(transform)
             .build();
     }

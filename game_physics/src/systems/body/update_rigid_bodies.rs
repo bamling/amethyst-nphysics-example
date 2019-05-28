@@ -77,7 +77,7 @@ impl<'s> System<'s> for UpdateRigidBodiesSystems {
                 }
 
                 // the Transform was modified, update the position directly
-                if modified_transforms.contains(id) {
+                if modified_physics_bodies.contains(id) && modified_transforms.contains(id) {
                     rigid_body.set_position(Isometry3::translation(
                         transform.isometry().translation.x.as_f32(),
                         transform.isometry().translation.y.as_f32(),
