@@ -2,12 +2,11 @@
 /// https://github.com/distransient/nphysics-ecs-dumb
 #[macro_use]
 extern crate log;
-pub extern crate ncollide3d as ncollide;
-pub extern crate nphysics3d as nphysics;
+extern crate ncollide3d as ncollide;
+extern crate nphysics3d as nphysics;
 
 use nalgebra::Vector3;
 use nphysics::world::World;
-pub use nphysics::{material, math::Velocity};
 
 pub use self::{
     body::{PhysicsBody, PhysicsBodyBuilder},

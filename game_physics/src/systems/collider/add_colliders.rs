@@ -125,7 +125,7 @@ impl<'s> System<'s> for AddCollidersSystem {
                 .density(physics_collider.density)
                 .material(physics_collider.material.clone())
                 .margin(physics_collider.margin)
-                .collision_groups(physics_collider.collision_group)
+                .collision_groups(physics_collider.collision_groups)
                 .linear_prediction(physics_collider.linear_prediction)
                 .angular_prediction(physics_collider.angular_prediction)
                 .sensor(physics_collider.sensor)

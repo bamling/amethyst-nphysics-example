@@ -44,7 +44,7 @@ impl<'s> System<'s> for UpdateCollidersSystems {
 
             // update collision groups
             collider_world
-                .set_collision_groups(collider_handle.clone(), physics_collider.collision_group);
+                .set_collision_groups(collider_handle.clone(), physics_collider.collision_groups);
 
             trace!(
                 "Updated collider in world with values: {:?}",

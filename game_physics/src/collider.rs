@@ -6,10 +6,10 @@ use ncollide::{
     shape::{Ball, Cuboid, ShapeHandle},
     world::CollisionGroups,
 };
-use nphysics::{
-    material::{BasicMaterial, MaterialHandle},
-    object::ColliderHandle,
-};
+pub use nphysics::material;
+use nphysics::object::ColliderHandle;
+
+use self::material::{BasicMaterial, MaterialHandle};
 
 /// The `HashMap` of `Index` to physics `ColliderHandle` mappings. This is used
 /// for the mapping of Amethyst `Entity`s based on their unique `Index` to
@@ -73,7 +73,7 @@ pub struct PhysicsCollider {
     pub density: f32,
     pub material: MaterialHandle<f32>,
     pub margin: f32,
-    pub collision_group: CollisionGroups,
+    pub collision_groups: CollisionGroups,
     pub linear_prediction: f32,
     pub angular_prediction: f32,
     pub sensor: bool,
@@ -101,7 +101,7 @@ impl fmt::Debug for PhysicsCollider {
             self.offset_from_parent,
             self.density,
             self.margin,
-            self.collision_group,
+            self.collision_groups,
             self.linear_prediction,
             self.angular_prediction,
             self.sensor,
@@ -229,7 +229,7 @@ impl PhysicsColliderBuilder {
             density: self.density,
             material: self.material,
             margin: self.margin,
-            collision_group: self.collision_groups,
+            collision_groups: self.collision_groups,
             linear_prediction: self.linear_prediction,
             angular_prediction: self.angular_prediction,
             sensor: self.sensor,

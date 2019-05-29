@@ -22,7 +22,7 @@ Execute [Cargo](https://doc.rust-lang.org/cargo/):
 $ cargo run
 ```
 
-#### TODOs:
+#### Roadmap:
 
 - [x] Allow multiple `PhysicsCollider`s per `Entity`
 - [x] Allow `PhysicsCollider`s without `PhysicsBody`
@@ -35,6 +35,9 @@ $ cargo run
 - [ ] More examples
 - [ ] Ray interferences to prevent tunneling issues*
 - [ ] Custom `GameData` with separate dispatcher for movement/physics based `System`s (executed during `fixed_update(..)`)
+- [x] Clean up `game_physics` crate exports
+- [ ] Add tests
+- [ ] Publish to [crates.io](https://crates.io) (migrate repository for that?)
 
 
 
