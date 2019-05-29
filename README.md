@@ -37,6 +37,7 @@ $ cargo run
 - [ ] Custom `GameData` with separate dispatcher for movement/physics based `System`s (executed during `fixed_update(..)`)
 - [x] Clean up `game_physics` crate exports
 - [ ] Add tests
+- [ ] Introduce generic type parameters over `f32`
 - [ ] Publish to [crates.io](https://crates.io) (migrate repository for that?)
 
 
