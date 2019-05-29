@@ -39,6 +39,7 @@ $ cargo run
 - [ ] Introduce generic type parameters over `f32`
 - [ ] Examples on how to use the crate
 - [ ] Polishing, polishing, polishing...
+- [ ] Build automation/CI
 - [ ] Publish to [crates.io](https://crates.io) (migrate repository for that?)
 
 
