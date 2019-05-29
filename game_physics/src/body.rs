@@ -1,25 +1,15 @@
 use std::collections::HashMap;
 
 use amethyst::ecs::{world::Index, Component, DenseVecStorage, FlaggedStorage};
-use nalgebra::{Matrix3, Point3, Vector3};
 use nphysics::object::BodyHandle;
 pub use nphysics::object::BodyStatus;
+
+use crate::math::{Matrix3, Point3, Vector3};
 
 /// The `HashMap` of `Index` to physics `BodyHandle` mappings. This is used for
 /// the mapping of Amethyst `Entity`s based on their unique `Index` to
 /// `RigidBody`s created in the `PhysicsWorld`.
 pub type PhysicsBodyHandles = HashMap<Index, BodyHandle>;
-
-/// Custom `Point` type to prevent collisions with forked `nalgebra`
-/// versions.
-pub type Point = Point3<f32>;
-
-/// Custom `Matrix` type to prevent collisions with forked `nalgebra`
-/// versions.
-pub type Matrix = Matrix3<f32>;
-
-/// Custom `Velocity` type based on `nalgebra::Velocity<f32>`.
-pub type Velocity = Vector3<f32>;
 
 /// The `PhysicsBody` `Component` represents a `PhysicsWorld` `RigidBody` in
 /// Amethyst/specs and contains all the data required for the synchronisation
@@ -37,10 +27,10 @@ pub struct PhysicsBody {
     pub(crate) handle: Option<BodyHandle>,
     pub gravity_enabled: bool,
     pub body_status: BodyStatus,
-    pub velocity: Velocity,
-    pub angular_inertia: Matrix,
+    pub velocity: Vector3<f32>,
+    pub angular_inertia: Matrix3<f32>,
     pub mass: f32,
-    pub local_center_of_mass: Point,
+    pub local_center_of_mass: Point3<f32>,
 }
 
 impl Component for PhysicsBody {
@@ -55,25 +45,26 @@ impl Component for PhysicsBody {
 ///
 /// ```rust
 /// use game_physics::{
-///     body::{BodyStatus, Matrix, Point, Velocity},
+///     body::BodyStatus,
+///     math::{Matrix3, Point3, Vector3},
 ///     PhysicsBodyBuilder,
 /// };
 ///
 /// let physics_body = PhysicsBodyBuilder::from(BodyStatus::Dynamic)
 ///     .gravity_enabled(true)
-///     .velocity(Velocity::new(1.0, 1.0, 1.0))
-///     .angular_inertia(Matrix::from_diagonal_element(3.0))
+///     .velocity(Vector3::new(1.0, 1.0, 1.0))
+///     .angular_inertia(Matrix3::from_diagonal_element(3.0))
 ///     .mass(1.3)
-///     .local_center_of_mass(Point::new(0.0, 0.0, 0.0))
+///     .local_center_of_mass(Point3::new(0.0, 0.0, 0.0))
 ///     .build();
 /// ```
 pub struct PhysicsBodyBuilder {
     gravity_enabled: bool,
     body_status: BodyStatus,
-    velocity: Velocity,
-    angular_inertia: Matrix,
+    velocity: Vector3<f32>,
+    angular_inertia: Matrix3<f32>,
     mass: f32,
-    local_center_of_mass: Point,
+    local_center_of_mass: Point3<f32>,
 }
 
 impl From<BodyStatus> for PhysicsBodyBuilder {
@@ -83,10 +74,10 @@ impl From<BodyStatus> for PhysicsBodyBuilder {
         Self {
             gravity_enabled: false,
             body_status,
-            velocity: Velocity::new(0.0, 0.0, 0.0),
-            angular_inertia: Matrix::zeros(),
+            velocity: Vector3::new(0.0, 0.0, 0.0),
+            angular_inertia: Matrix3::zeros(),
             mass: 1.2,
-            local_center_of_mass: Point::new(0.0, 0.0, 0.0),
+            local_center_of_mass: Point3::new(0.0, 0.0, 0.0),
         }
     }
 }
@@ -99,13 +90,13 @@ impl PhysicsBodyBuilder {
     }
 
     // Sets the `velocity` value of the `PhysicsBodyBuilder`.
-    pub fn velocity(mut self, velocity: Velocity) -> Self {
+    pub fn velocity(mut self, velocity: Vector3<f32>) -> Self {
         self.velocity = velocity;
         self
     }
 
     /// Sets the `angular_inertia` value of the `PhysicsBodyBuilder`.
-    pub fn angular_inertia(mut self, angular_inertia: Matrix) -> Self {
+    pub fn angular_inertia(mut self, angular_inertia: Matrix3<f32>) -> Self {
         self.angular_inertia = angular_inertia;
         self
     }
@@ -117,7 +108,7 @@ impl PhysicsBodyBuilder {
     }
 
     /// Sets the `local_center_of_mass` value of the `PhysicsBodyBuilder`.
-    pub fn local_center_of_mass(mut self, local_center_of_mass: Point) -> Self {
+    pub fn local_center_of_mass(mut self, local_center_of_mass: Point3<f32>) -> Self {
         self.local_center_of_mass = local_center_of_mass;
         self
     }

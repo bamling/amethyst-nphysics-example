@@ -5,9 +5,10 @@ extern crate log;
 extern crate ncollide3d as ncollide;
 extern crate nphysics3d as nphysics;
 
-use nalgebra::Vector3;
+pub use nalgebra as math;
 use nphysics::world::World;
 
+use self::math::Vector3;
 pub use self::{
     body::{PhysicsBody, PhysicsBodyBuilder},
     collider::{PhysicsCollider, PhysicsColliderBuilder, Shape},

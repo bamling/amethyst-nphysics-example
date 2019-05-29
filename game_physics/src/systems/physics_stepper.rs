@@ -1,4 +1,4 @@
-use amethyst::ecs::{Read, Resources, System, SystemData, WriteExpect};
+use amethyst::ecs::{Resources, System, SystemData, WriteExpect};
 
 use crate::PhysicsWorld;
 
@@ -15,7 +15,7 @@ pub struct PhysicsStepperSystem;
 impl<'s> System<'s> for PhysicsStepperSystem {
     type SystemData = WriteExpect<'s, PhysicsWorld>;
 
-    fn run(&mut self, (time, mut physics_world): Self::SystemData) {
+    fn run(&mut self, mut physics_world: Self::SystemData) {
         physics_world.step();
 
         // print collisions for debug purposes

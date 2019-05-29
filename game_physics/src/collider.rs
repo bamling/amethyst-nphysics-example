@@ -1,13 +1,12 @@
 use std::{collections::HashMap, f32::consts::PI, fmt};
 
 use amethyst::ecs::{world::Index, Component, DenseVecStorage, FlaggedStorage};
-use nalgebra::{Isometry3, Vector3};
-use ncollide::{
-    shape::{Ball, Cuboid, ShapeHandle},
-    world::CollisionGroups,
-};
+use ncollide::shape::{Ball, Cuboid, ShapeHandle};
+pub use ncollide::world::CollisionGroups;
 pub use nphysics::material;
 use nphysics::object::ColliderHandle;
+
+use crate::math::{Isometry3, Vector3};
 
 use self::material::{BasicMaterial, MaterialHandle};
 
@@ -16,21 +15,9 @@ use self::material::{BasicMaterial, MaterialHandle};
 /// `Collider`s created in the `PhysicsWorld`.
 pub type PhysicsColliderHandles = HashMap<Index, ColliderHandle>;
 
-/// Custom `Isometry` type to prevent collisions with forked
-/// `nalgebra` versions.
-pub type Isometry = Isometry3<f32>;
-
 /// `Shape` serves as an abstraction over nphysics `ShapeHandle`s and makes it
 /// easier to configure and define said `ShapeHandle`s for the user without
-/// having to know the underlying nphysics API. e.g:
-///
-/// ```rust,ignore
-/// Shape::Rectangle(10.0, 10.0, 10.0)
-/// ```
-/// translates to
-/// ```rust,ignore
-/// ShapeHandle::new(Cuboid::new(10.0, 10.0, 10.0))
-/// ```
+/// having to know the underlying nphysics API.
 #[derive(Clone, Copy, Debug)]
 pub enum Shape {
     Circle(f32),
@@ -69,7 +56,7 @@ impl Shape {
 pub struct PhysicsCollider {
     pub(crate) handle: Option<ColliderHandle>,
     pub shape: Shape,
-    pub offset_from_parent: Isometry,
+    pub offset_from_parent: Isometry3<f32>,
     pub density: f32,
     pub material: MaterialHandle<f32>,
     pub margin: f32,
@@ -125,12 +112,18 @@ impl PhysicsCollider {
 /// # Example
 ///
 /// ```rust
-/// use game_physics::{collider::Isometry, PhysicsColliderBuilder, Shape};
-/// use ncollide3d::world::CollisionGroups;
-/// use nphysics3d::material::{BasicMaterial, MaterialHandle};
+/// use game_physics::{
+///     collider::{
+///         material::{BasicMaterial, MaterialHandle},
+///         CollisionGroups,
+///     },
+///     math::Isometry3,
+///     PhysicsColliderBuilder,
+///     Shape,
+/// };
 ///
 /// let physics_collider = PhysicsColliderBuilder::from(Shape::Rectangle(10.0, 10.0, 1.0))
-///     .offset_from_parent(Isometry::identity())
+///     .offset_from_parent(Isometry3::identity())
 ///     .density(1.2)
 ///     .material(MaterialHandle::new(BasicMaterial::default()))
 ///     .margin(0.02)
@@ -142,7 +135,7 @@ impl PhysicsCollider {
 /// ```
 pub struct PhysicsColliderBuilder {
     shape: Shape,
-    offset_from_parent: Isometry,
+    offset_from_parent: Isometry3<f32>,
     density: f32,
     material: MaterialHandle<f32>,
     margin: f32,
@@ -158,7 +151,7 @@ impl From<Shape> for PhysicsColliderBuilder {
     fn from(shape: Shape) -> Self {
         Self {
             shape,
-            offset_from_parent: Isometry::identity(),
+            offset_from_parent: Isometry3::identity(),
             density: 1.3,
             material: MaterialHandle::new(BasicMaterial::default()),
             margin: 0.2, // default was: 0.01
@@ -172,7 +165,7 @@ impl From<Shape> for PhysicsColliderBuilder {
 
 impl PhysicsColliderBuilder {
     /// Sets the `offset_from_parent` value of the `PhysicsColliderBuilder`.
-    pub fn offset_from_parent(mut self, offset_from_parent: Isometry) -> Self {
+    pub fn offset_from_parent(mut self, offset_from_parent: Isometry3<f32>) -> Self {
         self.offset_from_parent = offset_from_parent;
         self
     }

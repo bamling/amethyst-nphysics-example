@@ -30,14 +30,15 @@ $ cargo run
 - [ ] Add more `Shape`s
 - [ ] Add other debug shapes
 - [ ] Expose channels for `CollisionEvent`s and `ProximityEvent`s 
-- [ ] Further clean up API and make it more intuitive (e.g. remove custom `Isometry`, `Matrix` and `Point` types)
+- [x] Remove custom `Isometry`, `Matrix` and `Point` types
 - [ ] Refactor body/collider `Sytem`s
-- [ ] More examples
 - [ ] Ray interferences to prevent tunneling issues*
 - [ ] Custom `GameData` with separate dispatcher for movement/physics based `System`s (executed during `fixed_update(..)`)
 - [x] Clean up `game_physics` crate exports
 - [ ] Add tests
 - [ ] Introduce generic type parameters over `f32`
+- [ ] Examples on how to use the crate
+- [ ] Polishing, polishing, polishing...
 - [ ] Publish to [crates.io](https://crates.io) (migrate repository for that?)
 
 

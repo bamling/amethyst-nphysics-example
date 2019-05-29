@@ -15,7 +15,7 @@ use amethyst::{
 
 use game_physics::{
     body::BodyStatus,
-    collider::Isometry,
+    math::Isometry3,
     PhysicsBodyBuilder,
     PhysicsColliderBuilder,
     Shape,
@@ -142,7 +142,7 @@ impl<'a, 'b> GameState<'a, 'b> {
             .create_entity()
             .with(
                 PhysicsColliderBuilder::from(Shape::Rectangle(10.0, 5.0, 1.0))
-                    .offset_from_parent(Isometry::translation(7.5, 0.0, 0.0))
+                    .offset_from_parent(Isometry3::translation(7.5, 0.0, 0.0).into())
                     .sensor(true)
                     .build(),
             )
@@ -167,10 +167,9 @@ impl<'a, 'b> GameState<'a, 'b> {
                 sprite_number: 0,
             })
             .with(PhysicsBodyBuilder::from(BodyStatus::Static).build())
-            //.with(PhysicsColliderBuilder::from(Shape::Rectangle(15.0, 16.0, 1.0)).build())
             .with(
                 PhysicsColliderBuilder::from(Shape::Rectangle(15.0, 12.0, 1.0))
-                    .offset_from_parent(Isometry::translation(0.0, -4.0, 0.0))
+                    .offset_from_parent(Isometry3::translation(0.0, -4.0, 0.0).into())
                     .build(),
             )
             //.with(Transform::from(Vector3::new(75.0, 50.0, 0.0)))
