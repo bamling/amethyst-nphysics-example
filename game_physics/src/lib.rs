@@ -31,21 +31,3 @@ pub type PhysicsWorld = World<f32>;
 /// `Gravity` is a type alias for `Vector3<f32>`. It represents a constant
 /// acceleration affecting all physical objects in the scene.
 pub type Gravity = Vector3<f32>;
-
-///
-pub struct Physics {
-    pub world: World<f32>,
-    pub body_handles: HashMap<Index, BodyHandle>,
-    pub collider_handles: HashMap<Index, ColliderHandle>,
-}
-
-impl Default for Physics {
-    ///
-    fn default() -> Self {
-        Self {
-            world: World::<f32>::new(),
-            body_handles: HashMap::<Index, BodyHandle>::new(),
-            collider_handles: HashMap::<Index, ColliderHandle>::new(),
-        }
-    }
-}
